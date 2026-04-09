@@ -187,6 +187,6 @@ jobs:
           REDIS_URL: redis://localhost:6379
           SECRET_KEY: ci-test-secret-key-not-for-production
           TEST_USER: analyst
-          TEST_PASS: secret
+          TEST_PASS: "Hunt3r$2026!"
         working-directory: api
         run: pytest tests/ -v --tb=short

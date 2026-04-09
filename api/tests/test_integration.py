@@ -6,7 +6,7 @@ from main import app
 client = TestClient(app)
 
 _TEST_USER = os.getenv("TEST_USER", "analyst")
-_TEST_PASS = os.getenv("TEST_PASS", "secret")
+_TEST_PASS = os.getenv("TEST_PASS", "Hunt3r$2026!")
 
 
 def test_health():

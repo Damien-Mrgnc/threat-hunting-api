@@ -35,8 +35,9 @@ CREATE TABLE users (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- Seed Initial Users (Password: secret)
--- Hash generated via passlib
-INSERT INTO users (username, hashed_password, role) VALUES 
-('admin', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin'),
-('analyst', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'analyst');
+-- Seed dev-only users — NEVER use these credentials in production.
+-- Rotate via: UPDATE users SET hashed_password = crypt('...', gen_salt('bf')) WHERE username = '...';
+-- Hash generated with passlib bcrypt rounds=12 for: Hunt3r$2026!
+INSERT INTO users (username, hashed_password, role) VALUES
+('admin',   '$2b$12$vzMAkRhxWKw/vx1iDQxMQuKaOVOt4aqZZ9WbQvp6mN3dzMkRhZ/EO', 'admin'),
+('analyst', '$2b$12$vzMAkRhxWKw/vx1iDQxMQuKaOVOt4aqZZ9WbQvp6mN3dzMkRhZ/EO', 'analyst');
