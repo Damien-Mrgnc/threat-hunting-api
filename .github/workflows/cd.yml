@@ -1,9 +1,10 @@
 name: CD — Deploy to Cloud Run
 
-# Triggers only on direct push to main (after CI passes via branch protection)
+# Manual trigger only — requires live GCP infrastructure (Cloud Run, Cloud SQL,
+# Memorystore, Artifact Registry). Terraform IaC is in terraform/.
+# To deploy: Actions → CD — Deploy to Cloud Run → Run workflow
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
