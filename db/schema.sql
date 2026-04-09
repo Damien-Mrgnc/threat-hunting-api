@@ -35,7 +35,7 @@ CREATE TABLE users (
     is_active BOOLEAN DEFAULT TRUE
 );
 
--- Seed Initial Users (Password: admin123 / admin123)
+-- Seed Initial Users (Password: secret)
 -- Hash generated via passlib
 INSERT INTO users (username, hashed_password, role) VALUES 
 ('admin', '$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin'),

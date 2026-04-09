@@ -1,67 +1,56 @@
-import pytest
-import httpx
 import os
+import pytest
+from fastapi.testclient import TestClient
+from main import app
 
-# Configuration (defaults to localhost for external testing)
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+client = TestClient(app)
 
-@pytest.fixture
-def client():
-    # Increase timeout for slow database queries
-    with httpx.Client(base_url=API_URL, timeout=30.0) as client:
-        yield client
+_TEST_USER = os.getenv("TEST_USER", "analyst")
+_TEST_PASS = os.getenv("TEST_PASS", "secret")
 
-def test_health(client):
-    # Route is at root level based on main.py include_router(system.router) without prefix
+
+def test_health():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_metrics(client):
-    # Route is at root level /metrics
+
+def test_metrics():
     response = client.get("/metrics")
     assert response.status_code == 200
     assert "process_cpu_seconds_total" in response.text
 
-def test_auth_login_success(client):
-    # Test getting a token
-    payload = {
-        "username": "analyst",
-        "password": "analyst"
-    }
+
+def test_auth_login_success():
+    payload = {"username": _TEST_USER, "password": _TEST_PASS}
     response = client.post("/auth/token", data=payload)
     assert response.status_code == 200
     data = response.json()
     assert "access_token" in data
     assert data["token_type"] == "bearer"
-    # Return token for potential use, though fixtures are better for sharing state
-    # Pytest warns if test returns value, so we assert and don't return, 
-    # or rely on test_protected_route_with_token to do its own login.
-    pass 
 
-def test_auth_login_failure(client):
-    payload = {
-        "username": "admin",
-        "password": "wrongpassword"
-    }
+
+def test_auth_login_failure():
+    payload = {"username": "admin", "password": "wrongpassword"}
     response = client.post("/auth/token", data=payload)
     assert response.status_code == 401
 
-def test_protected_route_without_token(client):
+
+def test_protected_route_without_token():
     response = client.get("/events/search?srcip=1.1.1.1")
-    # Should be 401 Unauthorized or 403 Forbidden
     assert response.status_code in [401, 403]
 
-def test_protected_route_with_token(client):
+
+def test_protected_route_with_token():
     # 1. Login
-    payload = {"username": "analyst", "password": "analyst"}
+    payload = {"username": _TEST_USER, "password": _TEST_PASS}
     login_res = client.post("/auth/token", data=payload)
+    assert login_res.status_code == 200
     token = login_res.json()["access_token"]
-    
-    # 2. Access Protected Route
+
+    # 2. Access protected route
     headers = {"Authorization": f"Bearer {token}"}
     response = client.get("/events/search?srcip=59.166.0.1", headers=headers)
-    
     assert response.status_code == 200
     data = response.json()
     assert "items" in data
