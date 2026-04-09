@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DOCS // SECURE.OPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">SECURE.OPS // DOCS</div>
+        <a href="/" style="color: var(--text-dim); text-decoration: none;">BACK TO PORTAL</a>
+    </header>
+
+    <div class="container">
+        <div class="section-title">Available Documents</div>
+        <div class="grid">
+            {% for file in files %}
+            <a href="/docs/{{ file.name }}" class="card">
+                <h3>{{ file.name }}</h3>
+                <p>{{ file.desc }}</p>
+                <div class="card-meta">
+                    <span>{{ file.type }}</span>
+                    <span>{{ file.action }} ></span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+
+</html>

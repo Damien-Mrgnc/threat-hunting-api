@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "prometheus_rules.yml"
+
+scrape_configs:
+  - job_name: "threat-api"
+    metrics_path: /metrics
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+    static_configs:
+      - targets: ["threat-hunting-api-3gqrf5kr2q-ew.a.run.app:443"]
+        labels:
+          env: "gcp"

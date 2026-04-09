@@ -1,0 +1,1 @@
+docker compose -f infra\docker-compose.yml exec api python /db/seed.py --data /data/UNSW-NB15.csv --features /data/UNSW-NB15_features.csv --dsn postgresql://analyst_user:secure_password_123@db:5432/threat_hunting_db

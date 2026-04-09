@@ -1,0 +1,114 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: threat-db
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ../db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      # Note: We use the env vars inside the container which are populated by env_file
+      test: [ "CMD-SHELL", "pg_isready -U analyst_user -d threat_hunting_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  # --- Reverse Proxy ---
+  nginx:
+    image: nginx:alpine
+    container_name: threat-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ../interface:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+      - grafana
+      - portal
+
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    # container_name: Removed for Scaling (Replicas)
+    deploy:
+      replicas: 3
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    # ports: REMOVED (Internal only)
+    volumes:
+      - ../api:/app
+      - ../db:/db
+      - ../data:/data
+      - ../interface:/interface
+
+  adminer:
+    image: adminer:latest
+    container_name: threat-adminer
+    restart: always
+    # ports: REMOVED (Internal only)
+    depends_on:
+      db:
+        condition: service_healthy
+
+  redis:
+    image: redis:alpine
+    container_name: threat-redis
+    hostname: redis
+    restart: always
+    # ports: REMOVED (Internal only)
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: threat-prometheus
+    volumes:
+      - ../observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    # ports: REMOVED (Internal only)
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=/prometheus/'
+      - '--web.route-prefix=/'
+    depends_on:
+      - api
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: threat-grafana
+    # ports: REMOVED (Internal only)
+    env_file:
+      - .env
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - ../observability/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ../observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+
+  portal:
+    build:
+      context: ..
+      dockerfile: portal/Dockerfile
+    container_name: threat-portal
+    # ports: REMOVED (Internal only)
+    volumes:
+      - ../portal/app:/app
+      - ../docs:/docs_mount
+    command: uvicorn main:app --host 0.0.0.0 --port 8088 --reload
+
+volumes:
+  db-data:
+  prometheus-data:

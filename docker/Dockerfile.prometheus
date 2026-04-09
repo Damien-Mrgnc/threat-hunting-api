@@ -1,0 +1,11 @@
+FROM prom/prometheus:latest
+
+COPY observability/gcp/prometheus.yml /etc/prometheus/prometheus.yml
+COPY observability/prometheus_rules.yml /etc/prometheus/prometheus_rules.yml
+
+# --web.external-url : chemin public via le LB
+# --web.route-prefix : Prometheus répond à /prometheus/ directement (pas de réécriture LB)
+CMD ["--config.file=/etc/prometheus/prometheus.yml", \
+     "--storage.tsdb.path=/prometheus", \
+     "--web.external-url=https://34.54.187.254/prometheus/", \
+     "--web.route-prefix=/prometheus"]

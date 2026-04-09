@@ -1,0 +1,15 @@
+FROM python:3.12-slim
+
+RUN pip install --no-cache-dir aiohttp requests psycopg[binary] google-cloud-storage
+
+WORKDIR /app
+
+# Scripts de test
+COPY ops/run_tests_gcp.py /app/run_tests_gcp.py
+
+# Scripts SQL (optimize / deoptimize)
+RUN mkdir -p /app/db
+COPY db/optimize.sql /app/db/optimize.sql
+COPY db/deoptimize.sql /app/db/deoptimize.sql
+
+CMD ["python", "/app/run_tests_gcp.py"]

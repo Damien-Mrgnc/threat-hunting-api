@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -t
+      - europe-west1-docker.pkg.dev/threat-hunting-api-2026/threat-hunting/api:latest
+      - -f
+      - docker/Dockerfile.api
+      - ./api
+images:
+  - europe-west1-docker.pkg.dev/threat-hunting-api-2026/threat-hunting/api:latest
+options:
+  logging: CLOUD_LOGGING_ONLY

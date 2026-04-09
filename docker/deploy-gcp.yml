@@ -1,0 +1,94 @@
+name: Deploy to GCP — Threat Hunting API
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Permettre un déclenchement manuel
+
+env:
+  PROJECT_ID: threat-hunting-prod
+  REGION: europe-west1
+  REGISTRY: europe-west1-docker.pkg.dev/threat-hunting-prod/threat-hunting
+
+jobs:
+  # --- Job 1 : Tests ---
+  test:
+    name: Tests API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r api/requirements.txt
+          pip install pytest httpx
+
+      - name: Run tests
+        run: pytest api/tests/ -v
+
+  # --- Job 2 : Build & Deploy ---
+  deploy:
+    name: Build & Deploy Cloud Run
+    runs-on: ubuntu-latest
+    needs: test  # Ne déployer que si les tests passent
+    permissions:
+      contents: read
+      id-token: write  # Nécessaire pour l'authentification OIDC
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Authentification GCP via OIDC (sans clé de service)
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      # Configurer gcloud et Docker
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # Build et push de l'image API
+      - name: Build & Push API image
+        run: |
+          docker build \
+            -t ${{ env.REGISTRY }}/api:${{ github.sha }} \
+            -t ${{ env.REGISTRY }}/api:latest \
+            -f upgrade/docker/Dockerfile.api \
+            ./api
+
+          docker push ${{ env.REGISTRY }}/api:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/api:latest
+
+      # Déployer sur Cloud Run
+      - name: Deploy API to Cloud Run
+        run: |
+          gcloud run deploy threat-hunting-api \
+            --image=${{ env.REGISTRY }}/api:${{ github.sha }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --quiet
+
+      # Vérifier que le déploiement est OK
+      - name: Verify deployment
+        run: |
+          URL=$(gcloud run services describe threat-hunting-api \
+            --region=${{ env.REGION }} \
+            --format='value(status.url)')
+          echo "API URL: $URL"
+          curl -f "$URL/health" || exit 1
+
+      - name: Print deployment summary
+        run: |
+          echo "✅ Déploiement réussi !"
+          echo "SHA: ${{ github.sha }}"
+          echo "Branche: ${{ github.ref_name }}"

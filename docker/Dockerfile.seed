@@ -1,0 +1,19 @@
+FROM python:3.12-slim
+
+RUN pip install --no-cache-dir psycopg[binary] google-cloud-storage
+
+WORKDIR /app
+COPY db/seed.py /app/seed.py
+# Features CSV est petit (4KB) — baked dans l'image
+COPY data/UNSW-NB15_features.csv /app/UNSW-NB15_features.csv
+
+# Wrapper : télécharge le CSV depuis GCS puis lance seed.py
+CMD ["sh", "-c", "\
+  echo 'Downloading UNSW-NB15.csv from GCS...' && \
+  python -c \"from google.cloud import storage; storage.Client().bucket('threat-hunting-api-2026-dataset').blob('UNSW-NB15.csv').download_to_filename('/tmp/UNSW-NB15.csv')\" && \
+  echo 'Download complete, starting seed...' && \
+  python /app/seed.py \
+    --data /tmp/UNSW-NB15.csv \
+    --features /app/UNSW-NB15_features.csv \
+    --dsn \"${DSN}\" \
+"]

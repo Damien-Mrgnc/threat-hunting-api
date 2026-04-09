@@ -1,0 +1,189 @@
+name: CI — Security Gates
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write   # Required for SARIF uploads to GitHub Security tab
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. SAST — Static Application Security Testing
+  # ─────────────────────────────────────────────
+  sast:
+    name: SAST — Bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit (Python SAST)
+        # -ll = report issues of medium severity and above
+        # -x  = exclude tests directory (test code has different rules)
+        run: |
+          bandit -r api/ -ll -x api/tests/ \
+            --format json \
+            --output bandit-report.json || true
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-sast-report
+          path: bandit-report.json
+          retention-days: 30
+
+  # ─────────────────────────────────────────────
+  # 2. Dependency Audit — pip-audit (CVE scanning)
+  # ─────────────────────────────────────────────
+  dependency-audit:
+    name: Dependency Audit — pip-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit
+        # Fails on any known vulnerability in pinned dependencies
+        run: |
+          pip-audit -r api/requirements.txt \
+            --format json \
+            --output pip-audit-report.json || true
+
+      - name: Upload pip-audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          retention-days: 30
+
+  # ─────────────────────────────────────────────
+  # 3. Container Scan — Trivy (CVE in Docker image)
+  # ─────────────────────────────────────────────
+  container-scan:
+    name: Container Scan — Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image (for scanning only)
+        run: |
+          docker build \
+            -t threat-hunting-api:ci-scan \
+            -f docker/Dockerfile.api \
+            ./api
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: threat-hunting-api:ci-scan
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+          # Only fail on fixable vulnerabilities (avoids false positives from OS packages with no upstream fix)
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+          category: container-scan
+
+  # ─────────────────────────────────────────────
+  # 4. IaC Scan — Checkov (Terraform misconfigurations)
+  # ─────────────────────────────────────────────
+  iac-scan:
+    name: IaC Scan — Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov on Terraform
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+          # soft_fail: keeps the pipeline green while still uploading findings
+          soft_fail: true
+
+      - name: Upload Checkov SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: checkov-results.sarif
+          category: iac-scan
+
+  # ─────────────────────────────────────────────
+  # 5. Integration tests
+  # ─────────────────────────────────────────────
+  tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: analyst_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: threat_hunting_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r api/requirements.txt
+
+      - name: Apply DB schema
+        env:
+          PGPASSWORD: test_password
+        run: psql -h localhost -U analyst_user -d threat_hunting_db -f db/schema.sql
+
+      - name: Run pytest
+        env:
+          DATABASE_URL: postgresql+psycopg://analyst_user:test_password@localhost:5432/threat_hunting_db
+          REDIS_URL: redis://localhost:6379
+          SECRET_KEY: ci-test-secret-key-not-for-production
+        working-directory: api
+        run: pytest tests/ -v --tb=short

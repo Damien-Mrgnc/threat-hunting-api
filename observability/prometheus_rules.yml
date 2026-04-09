@@ -1,0 +1,128 @@
+groups:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SLO — Performance & Reliability
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: API_SLO
+    rules:
+      - alert: HighErrorRate
+        expr: >
+          (sum(rate(http_requests_total{status=~"5.."}[1m]))
+          / sum(rate(http_requests_total[1m]))) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          category: reliability
+        annotations:
+          summary: "High error rate (> 5%) on API"
+          description: "More than 5% of requests are returning 5xx. Current value: {{ $value | humanizePercentage }}"
+
+      - alert: SlowQueries
+        expr: >
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket[2m])) by (le)
+          ) > 2.0
+        for: 1m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High latency — p99 > 2 s"
+          description: "Database may be locked or overloaded. p99 = {{ $value | humanizeDuration }}"
+
+      - alert: DBPoolSaturation
+        expr: db_pool_checked_out_connections > 18
+        for: 10s
+        labels:
+          severity: critical
+          category: reliability
+        annotations:
+          summary: "DB connection pool saturated (> 18 / 20)"
+          description: "Connection pool is near its limit. Consider PgBouncer or upgrading instance tier."
+
+      - alert: APIDown
+        expr: absent(http_requests_total) == 1
+        for: 30s
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Threat Hunting API is not responding"
+          description: "No HTTP request metrics received for 30 seconds. API may be down."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # SECURITY — Authentication, Rate Limiting & Threat Detection
+  # ═══════════════════════════════════════════════════════════════════════════
+  - name: API_Security
+    rules:
+      - alert: BruteForceAttempt
+        # Fires when > 30 authentication failures occur within a 5-minute window
+        expr: >
+          sum(increase(http_requests_total{status="401"}[5m])) > 30
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Potential brute-force attack detected"
+          description: "{{ $value | humanize }} authentication failures in the last 5 minutes. Source IP-based rate limiting is active."
+
+      - alert: SustainedAuthFailures
+        # Escalation: still failing after 10 minutes → likely automated attack
+        expr: >
+          sum(rate(http_requests_total{status="401"}[10m])) * 60 > 10
+        for: 10m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Sustained authentication failure stream"
+          description: "More than 10 auth failures/min for 10 consecutive minutes. Possible credential stuffing attack."
+
+      - alert: RateLimitFlood
+        # Fires when the rate limiter rejects > 60 req/min (> 1/s on average)
+        expr: >
+          sum(rate(http_requests_total{status="429"}[1m])) * 60 > 60
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Rate limit flood detected"
+          description: "More than 60 rate-limit rejections per minute. Current: {{ $value | humanize }} req/min."
+
+      - alert: UnauthorizedAdminAccess
+        # Repeated 403 responses may indicate privilege escalation attempts
+        expr: >
+          sum(increase(http_requests_total{status="403"}[5m])) > 10
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Repeated access denied (403) — possible privilege escalation"
+          description: "{{ $value | humanize }} forbidden responses in 5 minutes."
+
+      - alert: HighMLAttackDetectionRate
+        # Fires when the ML model classifies > 5 events/sec as attacks
+        expr: >
+          sum(rate(ml_detections_total{label="1"}[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High ML attack detection rate"
+          description: "ML model is flagging more than 5 network events per second as attacks. Investigate with /detect endpoint."
+
+      - alert: ThreatIntelFlagsSpike
+        # Fires when > 20 IPs are flagged by threat intelligence in 5 minutes
+        expr: >
+          sum(increase(threat_intel_hits_total[5m])) > 20
+        for: 1m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Spike in threat intelligence flags"
+          description: "{{ $value | humanize }} IPs flagged as malicious by AbuseIPDB in 5 minutes."

@@ -1,0 +1,106 @@
+<mxfile host="65bd71144e">
+    <diagram id="ArchitectureDiagram_v7" name="Architecture v7 (Vibrant Dark)">
+        <mxGraphModel dx="1204" dy="710" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" background="#1e1e1e" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="Threat Hunting API - Architecture" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="234" y="20" width="700" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=light-dark(#000000, #5e3206);strokeColor=#36393d;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="70" width="880" height="520" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="Docker Compose Environment" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=#00FFFF;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="90" width="200" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="Analyst / User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#FFFFFF;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="40" y="280" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="&lt;b&gt;Nginx&lt;/b&gt;&lt;br&gt;(Reverse Proxy + Cache)&lt;br&gt;&lt;i&gt;Port: 80&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6a00ff;strokeColor=#d80073;fontColor=#FFFFFF;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="260" width="140" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="&lt;b&gt;Portal&lt;/b&gt;&lt;br&gt;(Docs / Landing)&lt;br&gt;&lt;i&gt;Port: 8088&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#00a300;strokeColor=#60a917;fontColor=#FFFFFF;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="120" width="140" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="400" y="230" width="180" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#0050ef;strokeWidth=2;" parent="8" vertex="1">
+                    <mxGeometry width="180" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="&lt;b&gt;API Cluster&lt;/b&gt;&lt;br&gt;(Load Balanced)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=#FFFFFF;" parent="8" vertex="1">
+                    <mxGeometry x="20" y="5" width="140" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="API Replica 1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006eaf;fontColor=#FFFFFF;" parent="8" vertex="1">
+                    <mxGeometry x="30" y="30" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="API Replica 2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006eaf;fontColor=#FFFFFF;" parent="8" vertex="1">
+                    <mxGeometry x="30" y="70" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="API Replica 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;strokeColor=#006eaf;fontColor=#FFFFFF;" parent="8" vertex="1">
+                    <mxGeometry x="30" y="110" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="&lt;b&gt;Adminer&lt;/b&gt;&lt;br&gt;(DB UI)&lt;br&gt;&lt;i&gt;Port: 8080&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fa6800;strokeColor=#C73500;fontColor=#FFFFFF;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="400" y="440" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="&lt;b&gt;Redis&lt;/b&gt;&lt;br&gt;(App Cache)&lt;br&gt;&lt;i&gt;Port: 6379&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d80073;strokeColor=#A20025;fontColor=#FFFFFF;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="160" width="100" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;(Data Storage)&lt;br&gt;&lt;i&gt;Port: 5432&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#0050ef;strokeColor=#001DBC;fontColor=#FFFFFF;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="700" y="300" width="100" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="" style="group" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="880" y="150" width="140" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;strokeColor=#AAAAAA;" parent="17" vertex="1">
+                    <mxGeometry width="140" height="260" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="Observability" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1;fontColor=#FFFFFF;" parent="17" vertex="1">
+                    <mxGeometry x="10" y="10" width="120" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="&lt;b&gt;Grafana&lt;/b&gt;&lt;br&gt;(Dashboards)&lt;br&gt;&lt;i&gt;Port: 3000&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3c800;strokeColor=#B09B00;fontColor=#000000;strokeWidth=2;" parent="17" vertex="1">
+                    <mxGeometry x="10" y="40" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="21" value="&lt;b&gt;Prometheus&lt;/b&gt;&lt;br&gt;(Metrics DB)&lt;br&gt;&lt;i&gt;Port: 9090&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#76608a;strokeColor=#432D57;fontColor=#FFFFFF;strokeWidth=2;" parent="17" vertex="1">
+                    <mxGeometry x="10" y="160" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="23" value="Query" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#FFFFFF;" parent="17" source="20" target="21" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="Scrape" style="endArrow=classic;html=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;dashed=1;strokeColor=#FFFFFF;" parent="1" source="21" target="9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="24" value="HTTP" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" source="5" target="6" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="25" value="/" style="endArrow=classic;html=1;exitX=1;exitY=0;entryX=0;entryY=0.5;edgeStyle=orthogonalEdgeStyle;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" source="6" target="7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="26" value="/api" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" source="6" target="9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="/db-admin" style="endArrow=classic;html=1;exitX=1;exitY=1;entryX=0;entryY=0.5;edgeStyle=orthogonalEdgeStyle;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" source="6" target="14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="28" value="/grafana" style="endArrow=classic;html=1;exitX=0.5;exitY=1;entryX=0;entryY=0.5;edgeStyle=orthogonalEdgeStyle;dashed=1;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" source="6" target="20" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="254" y="560"/>
+                            <mxPoint x="830" y="560"/>
+                            <mxPoint x="830" y="220"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;edgeStyle=orthogonalEdgeStyle;strokeColor=#FFFFFF;" parent="1" source="9" target="15" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.75;entryX=0;entryY=0.5;edgeStyle=orthogonalEdgeStyle;strokeColor=#FFFFFF;" parent="1" source="9" target="16" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="31" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0.5;entryY=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#FFFFFF;" parent="1" source="14" target="16" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

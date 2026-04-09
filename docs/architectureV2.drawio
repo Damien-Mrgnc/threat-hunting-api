@@ -1,0 +1,85 @@
+<mxfile host="65bd71144e">
+    <diagram id="ArchitectureDiagram_v2" name="Architecture v2">
+        <mxGraphModel dx="458" dy="875" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="Threat Hunting API - Architecture v2 (Reverse Proxy Enabled)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="250" y="20" width="700" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="user" value="User / Analyst" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontColor=#FFFFFF;" parent="1" vertex="1">
+                    <mxGeometry x="50" y="250" width="30" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="docker_group" value="Docker Compose Environment" style="group;dashed=1;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1" parent="1" vertex="1" connectable="0">
+                    <mxGeometry x="170" y="90" width="850" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="docker_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;" parent="docker_group" vertex="1">
+                    <mxGeometry width="850" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="nginx" value="&lt;b&gt;Nginx&lt;/b&gt;&lt;br&gt;(Reverse Proxy + Cache)&lt;br&gt;&lt;i&gt;Port 80&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d80073;strokeColor=#a20025;fontColor=#ffffff;" parent="docker_group" vertex="1">
+                    <mxGeometry x="30" y="180" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="portal" value="&lt;b&gt;Portal&lt;/b&gt;&lt;br&gt;(Landing / Docs)&lt;br&gt;&lt;i&gt;Internal: 8088&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#60a917;strokeColor=#2d7600;fontColor=#ffffff;" parent="docker_group" vertex="1">
+                    <mxGeometry x="250" y="30" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="api" value="&lt;b&gt;API Cluster&lt;/b&gt;&lt;br&gt;(3 Replicas)&lt;br&gt;&lt;i&gt;Internal: 8000&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0050ef;strokeColor=#001dbc;fontColor=#ffffff;" parent="docker_group" vertex="1">
+                    <mxGeometry x="250" y="120" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="adminer" value="&lt;b&gt;Adminer&lt;/b&gt;&lt;br&gt;(DB UI)&lt;br&gt;&lt;i&gt;Internal: 8080&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3c800;strokeColor=#b09b00;fontColor=#000000;" parent="docker_group" vertex="1">
+                    <mxGeometry x="250" y="320" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="obs_group" value="" style="group" parent="docker_group" vertex="1" connectable="0">
+                    <mxGeometry x="250" y="400" width="300" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="grafana" value="&lt;b&gt;Grafana&lt;/b&gt;&lt;br&gt;&lt;i&gt;Internal: 3000&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fa6800;strokeColor=#c73500;fontColor=#ffffff;" parent="obs_group" vertex="1">
+                    <mxGeometry y="10" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="prometheus" value="&lt;b&gt;Prometheus&lt;/b&gt;&lt;br&gt;&lt;i&gt;Internal: 9090&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#6d8764;strokeColor=#3a5431;fontColor=#ffffff;" parent="obs_group" vertex="1">
+                    <mxGeometry x="180" y="10" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_graf_prom" value="Query" style="endArrow=classic;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="obs_group" source="grafana" target="prometheus" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="db" value="&lt;b&gt;PostgreSQL 15&lt;/b&gt;&lt;br&gt;(Primary DB)&lt;br&gt;&lt;i&gt;Port: 5432&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#1ba1e2;strokeColor=#006eaf;fontColor=#ffffff;" parent="docker_group" vertex="1">
+                    <mxGeometry x="500" y="120" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="redis" value="&lt;b&gt;Redis&lt;/b&gt;&lt;br&gt;(Cache)&lt;br&gt;&lt;i&gt;Port: 6379&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d80073;strokeColor=#a20025;fontColor=#ffffff;" parent="docker_group" vertex="1">
+                    <mxGeometry x="640" y="244" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_nginx_portal" value="/" style="endArrow=classic;html=1;entryX=0;entryY=0.5;exitX=1;exitY=0.5;edgeStyle=orthogonalEdgeStyle;rounded=1;" parent="docker_group" source="nginx" target="portal" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_nginx_api" value="/api" style="endArrow=classic;html=1;entryX=0;entryY=0.5;exitX=1;exitY=0.5;edgeStyle=orthogonalEdgeStyle;rounded=1;" parent="docker_group" source="nginx" target="api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_nginx_adminer" value="/db-admin" style="endArrow=classic;html=1;entryX=0;entryY=0.5;exitX=1;exitY=0.5;edgeStyle=orthogonalEdgeStyle;rounded=1;" parent="docker_group" source="nginx" target="adminer" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_nginx_grafana" value="/grafana" style="endArrow=classic;html=1;entryX=0;entryY=0.5;exitX=1;exitY=0.5;edgeStyle=orthogonalEdgeStyle;rounded=1;" parent="docker_group" source="nginx" target="grafana" edge="1">
+                    <mxGeometry x="0.3124" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="200" y="220"/>
+                            <mxPoint x="200" y="440"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="e_api_db" value="SQL" style="endArrow=classic;html=1;entryX=0;entryY=0.5;exitX=1;exitY=0.5;" parent="docker_group" source="api" target="db" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_api_redis" value="Cache" style="endArrow=classic;html=1;entryX=0;entryY=0.5;exitX=1;exitY=0.8;" parent="docker_group" source="api" target="redis" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_adminer_db" value="Manage" style="endArrow=classic;html=1;entryX=0.5;entryY=1;exitX=1;exitY=0.5;edgeStyle=orthogonalEdgeStyle;rounded=1;" parent="docker_group" source="adminer" target="db" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_prom_api" value="Scrape(/metrics)" style="endArrow=classic;html=1;exitX=0.5;exitY=0;entryX=0.75;entryY=1;edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;" parent="docker_group" source="prometheus" target="api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="e_user_nginx" value="HTTP (80)" style="endArrow=classic;html=1;strokeWidth=2;entryX=0;entryY=0.5;exitX=1;exitY=0.5;" parent="1" source="user" target="nginx" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

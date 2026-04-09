@@ -1,0 +1,139 @@
+# =============================================================================
+# SECRETS & CREDENTIALS
+# =============================================================================
+upgrade/secrets.local
+infra/.env
+*.env
+.env.*
+!.env.example
+!infra/.env.example
+
+# Terraform credentials (never commit real tfvars)
+terraform/terraform.tfvars
+!terraform/terraform.tfvars.example
+
+# GCP service account keys
+*.json.key
+service-account*.json
+gcp-key*.json
+
+# =============================================================================
+# TLS / CERTIFICATES
+# =============================================================================
+infra/nginx/certs/*.key
+infra/nginx/certs/*.crt
+infra/nginx/certs/*.pem
+*.pem
+*.key
+!*.key.example
+
+# =============================================================================
+# TERRAFORM
+# =============================================================================
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/crash.log
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
+.terraformrc
+terraform.rc
+
+# =============================================================================
+# DATASET (large files — download separately)
+# =============================================================================
+data/*.csv
+data/*.pcap
+data/*.zip
+!data/.gitkeep
+
+# =============================================================================
+# ML MODEL (binary artifact — generate with: python ml/train.py)
+# =============================================================================
+# Uncomment if you prefer not to commit the model to git:
+# api/ml/model.pkl
+
+# =============================================================================
+# PYTHON
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdks/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# pytest
+.pytest_cache/
+.cache/
+*.pytest_ini
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# =============================================================================
+# GENERATED FILES
+# =============================================================================
+api/reports/*.json
+api/reports/*.csv
+api/.pytest_cache/
+upgrade/RAPPORT_PERFORMANCE.md
+
+# =============================================================================
+# DOCKER
+# =============================================================================
+.docker/
+
+# =============================================================================
+# EDITORS & OS
+# =============================================================================
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =============================================================================
+# SECURITY SCAN REPORTS (CI artifacts — not committed)
+# =============================================================================
+bandit-report.json
+pip-audit-report.json
+trivy-results.sarif
+checkov-results.sarif

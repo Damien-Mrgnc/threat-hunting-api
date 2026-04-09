@@ -1,0 +1,42 @@
+##############################################################################
+# terraform.tfvars.example
+# Copier ce fichier en terraform.tfvars et remplir les valeurs
+# ⚠️ NE JAMAIS committer terraform.tfvars (contient des infos sensibles)
+##############################################################################
+
+# --- OBLIGATOIRE : À renseigner ---
+
+# ID du projet GCP (visible dans la console GCP)
+project_id = "threat-hunting-prod"
+
+# Ton dépôt GitHub au format "owner/repo"
+# Laisser vide si tu n'utilises pas GitHub Actions
+github_repo = "ton-username/threat-hunting-api"
+
+# --- OPTIONNEL : Valeurs par défaut suffisantes pour démarrer ---
+
+region      = "europe-west1"
+zone        = "europe-west1-b"
+environment = "prod"
+
+# Base de données
+db_instance_name = "threat-hunting-db"
+db_tier          = "db-g1-small"    # Changer en "db-n1-standard-1" pour plus de charge
+db_name          = "threat_hunting_db"
+db_user          = "analyst_user"
+
+# Redis
+redis_memory_size_gb = 1
+
+# Cloud Run API
+api_min_instances = 1    # 0 pour économiser (cold start ~2s), 1 pour toujours chaud
+api_max_instances = 10
+api_cpu           = "1"
+api_memory        = "512Mi"
+
+# Domaine custom (laisser vide pour utiliser l'IP du Load Balancer)
+# Si renseigné, un certificat TLS managé sera créé automatiquement
+domain_name = ""  # Ex: "api.threat-hunting.com"
+
+# Nom du bucket GCS (sera auto-généré si vide)
+dataset_bucket_name = ""

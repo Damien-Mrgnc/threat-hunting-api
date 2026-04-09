@@ -1,0 +1,9 @@
+FROM grafana/grafana:latest
+
+# Provisioning datasource + dashboards
+COPY observability/grafana/datasources/ /etc/grafana/provisioning/datasources/
+COPY observability/grafana/dashboards/ /etc/grafana/provisioning/dashboards/
+
+# Grafana sert depuis /grafana/ via le LB sans réécriture de chemin (SERVE_FROM_SUB_PATH)
+ENV GF_SERVER_ROOT_URL=https://34.54.187.254/grafana/
+ENV GF_SERVER_SERVE_FROM_SUB_PATH=true

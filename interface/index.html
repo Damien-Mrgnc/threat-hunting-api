@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECURE.OPS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="terminal-layout">
+        <header class="status-bar">
+            <div class="brand">
+                <span class="prompt">root@threat-hunting:~#</span>
+                <span class="blinking-cursor">_</span>
+            </div>
+            <div class="system-status">
+                <span id="api-status">INITIALIZING LINK...</span>
+                <div class="status-dot"></div>
+            </div>
+        </header>
+
+        <div class="main-interface">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>MODULES</h3>
+                </div>
+                <nav>
+                    <button class="nav-item active" data-target="wl1">
+                        <span class="hash">#</span> EVENT_LOGS
+                    </button>
+                    <button class="nav-item" data-target="wl2">
+                        <span class="hash">#</span> TRAFFIC_ANALYSIS
+                    </button>
+                    <button class="nav-item" data-target="wl3">
+                        <span class="hash">#</span> THREAT_VECTORS
+                    </button>
+                    <button class="nav-item" data-target="wl4">
+                        <span class="hash">#</span> REPORT_JOBS <span class="badge-new">beta</span>
+                    </button>
+                    <button class="nav-item" data-target="wl-visualizer" id="nav-viz" style="display:none;">
+                        <span class="hash">#</span> VISUALIZER
+                    </button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="config-block">
+                        <label>TARGET_ENDPOINT</label>
+                        <input type="text" id="api-url" value="/api">
+                    </div>
+                    <button id="btn-logout" class="run-btn"
+                        style="width:100%; margin-top:10px; background:var(--alert); color:#000;">LOGOUT</button>
+                </div>
+            </aside>
+
+            <main class="viewport">
+                <!-- Workload 1 -->
+                <div id="wl1" class="panel active">
+                    <div class="panel-head">
+                        <h2>/events/search</h2>
+                        <span class="panel-meta">Raw log inspection</span>
+                    </div>
+                    <div class="command-bar">
+                        <div class="cmd-group">
+                            <label>SRC_IP</label>
+                            <input type="text" id="w1-srcip" value="59.166.0.1">
+                        </div>
+                        <div class="cmd-group">
+                            <label>PROTO</label>
+                            <input type="text" id="w1-proto" placeholder="ALL">
+                        </div>
+                        <div class="cmd-group small">
+                            <label>LIMIT</label>
+                            <input type="number" id="w1-limit" value="50">
+                        </div>
+                        <div class="cmd-group" style="flex: 0.5; align-self: center;">
+                            <label>ASYNC</label>
+                            <input type="checkbox" id="w1-async">
+                        </div>
+                        <button id="btn-search" class="run-btn">EXECUTE</button>
+                    </div>
+                    <div class="output-console" id="w1-results">
+                        <span class="console-text">> Awaiting command input...</span>
+                    </div>
+                </div>
+
+                <!-- Workload 2 -->
+                <div id="wl2" class="panel">
+                    <div class="panel-head">
+                        <h2>/events/stats</h2>
+                        <span class="panel-meta">Volume metrics aggregation</span>
+                    </div>
+                    <div class="command-bar">
+                        <div class="cmd-group">
+                            <label>TIME_WINDOW (H)</label>
+                            <input type="number" id="w2-hours" value="24">
+                        </div>
+                        <button id="btn-stats" class="run-btn">EXECUTE</button>
+                    </div>
+                    <div class="output-console visualization" id="w2-results">
+                        <span class="console-text">> No data analysis initiated.</span>
+                    </div>
+                </div>
+
+                <!-- Workload 3 -->
+                <div id="wl3" class="panel">
+                    <div class="panel-head">
+                        <h2>/events/top-threats</h2>
+                        <span class="panel-meta">High priority vector analysis</span>
+                    </div>
+                    <div class="command-bar">
+                        <div class="cmd-group">
+                            <label>TOP_N</label>
+                            <input type="number" id="w3-limit" value="10">
+                        </div>
+                        <button id="btn-top" class="run-btn">EXECUTE</button>
+                    </div>
+                    <div class="output-console" id="w3-results">
+                        <span class="console-text">> Awaiting execution...</span>
+                    </div>
+                </div>
+
+                <!-- Workload 4: Job Monitor -->
+                <div id="wl4" class="panel">
+                    <div class="panel-head">
+                        <h2>/jobs/monitor</h2>
+                        <span class="panel-meta">Async Report Generation & Status</span>
+                    </div>
+
+                    <div class="command-bar">
+                        <div class="cmd-group">
+                            <label>YEAR</label>
+                            <input type="number" id="w4-year" value="2024">
+                        </div>
+                        <div class="cmd-group">
+                            <label>MONTH</label>
+                            <input type="number" id="w4-month" value="1">
+                        </div>
+                        <button id="btn-report" class="run-btn">GENERATE NEW REPORT</button>
+                    </div>
+
+                    <div style="flex: 1; display:flex; flex-direction:column; gap: 10px; overflow: hidden;">
+                        <div class="output-console" id="w4-results" style="flex: 1;">
+                            <table id="jobs-table">
+                                <thead>
+                                    <tr>
+                                        <th>JOB_ID</th>
+                                        <th>SUBMITTED</th>
+                                        <th>STATUS</th>
+                                        <th>RESULT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" style="text-align:center; padding: 20px; color: #666;">
+                                            > Connecting to job registry...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="text-align: right;">
+                            <button id="btn-refresh-jobs" class="run-btn"
+                                style="width: auto; padding: 0 10px; height: 25px; font-size: 10px;">REFRESH
+                                LIST</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW VISUALIZER PANEL -->
+                <div id="wl-visualizer" class="panel">
+                    <div class="panel-head">
+                        <h2>/data/visualizer</h2>
+                        <span class="panel-meta">Interactive Json Inspector</span>
+                    </div>
+                    <div id="viz-content" class="output-console" style="flex: 1; overflow: auto; padding: 20px;">
+                        <div style="text-align:center; color:#666; margin-top: 50px;">
+                            > NO DATA LOADED<br>
+                            > Select a job from the REPORT_JOBS tab to visualize.
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>Access Control</h2>
+                <p>Please authenticate to continue.</p>
+            </div>
+            <form id="login-form" class="login-form">
+                <div class="form-group">
+                    <label>IDENTITY</label>
+                    <input type="text" id="login-username" value="admin" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>CREDENTIAL</label>
+                    <input type="password" id="login-password" value="admin123">
+                </div>
+                <div class="error-msg" id="login-error"></div>
+                <button type="submit" class="login-btn">AUTHENTICATE</button>
+            </form>
+        </div>
+    </div>
+    <script src="app.js?v=4"></script>
+</body>
+
+</html>

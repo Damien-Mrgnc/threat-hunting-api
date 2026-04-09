@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }} // SECURE.OPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <header>
+        <div class="brand">DOCS // {{ title }}</div>
+        <a href="/docs" style="color: var(--text-dim); text-decoration: none;">BACK TO LIST</a>
+    </header>
+
+    <div class="container">
+        <div class="markdown-body">
+            {{ content | safe }}
+        </div>
+    </div>
+</body>
+
+</html>

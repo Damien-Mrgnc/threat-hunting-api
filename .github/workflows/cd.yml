@@ -1,0 +1,98 @@
+name: CD — Deploy to Cloud Run
+
+# Triggers only on direct push to main (after CI passes via branch protection)
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write   # Required for Workload Identity Federation (keyless auth)
+
+jobs:
+  deploy:
+    name: Build & Deploy API
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Authenticate to GCP ──────────────────────────────────────────────
+      # Uses a GCP Service Account key stored as GitHub secret GCP_SA_KEY.
+      # To use Workload Identity Federation (keyless) instead, replace with
+      # the 'workload_identity_provider' + 'service_account' approach.
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ── Configure Docker to push to Artifact Registry ────────────────────
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker \
+            ${{ vars.GAR_REGION }}-docker.pkg.dev \
+            --quiet
+
+      # ── Build & Push Docker image ────────────────────────────────────────
+      - name: Build and push API image
+        env:
+          IMAGE: ${{ vars.GAR_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/threat-hunting/api
+        run: |
+          docker build \
+            -t $IMAGE:${{ github.sha }} \
+            -t $IMAGE:latest \
+            -f docker/Dockerfile.api \
+            ./api
+
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      # ── Deploy to Cloud Run ──────────────────────────────────────────────
+      - name: Deploy to Cloud Run
+        env:
+          IMAGE: ${{ vars.GAR_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/threat-hunting/api
+        run: |
+          gcloud run deploy threat-hunting-api \
+            --image="$IMAGE:${{ github.sha }}" \
+            --region="${{ vars.GCP_REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --platform=managed \
+            --quiet
+
+      # ── Smoke test after deploy ──────────────────────────────────────────
+      - name: Smoke test — health check
+        run: |
+          URL=$(gcloud run services describe threat-hunting-api \
+            --region="${{ vars.GCP_REGION }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --format="value(status.url)")
+
+          echo "Deployed URL: $URL"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL/health")
+
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed! HTTP $STATUS"
+            exit 1
+          fi
+          echo "Health check passed (HTTP 200)"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Required GitHub secrets / variables:
+#
+#   Secrets (Settings → Secrets → Actions):
+#     GCP_SA_KEY          — GCP service account JSON key (base64 or raw JSON)
+#
+#   Variables (Settings → Variables → Actions):
+#     GCP_PROJECT_ID      — e.g. threat-hunting-api-2026
+#     GCP_REGION          — e.g. europe-west1
+#     GAR_REGION          — Artifact Registry region, e.g. europe-west1
+#
+# Required Service Account roles:
+#   roles/run.admin
+#   roles/artifactregistry.writer
+#   roles/iam.serviceAccountUser
+# ─────────────────────────────────────────────────────────────────────────────
